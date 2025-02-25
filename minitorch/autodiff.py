@@ -69,13 +69,13 @@ def topological_sort(variable: Variable) -> Iterable[Variable]:
     Returns:
         Non-constant Variables in topological order starting from the right.
     """
-    visited = set()
+    visited = []
     ordered_list = []
 
     def dfs(v: Variable):
-        if v in visited or v.is_constant():
+        if v.unique_id in visited or v.is_constant():
             return
-        visited.add(v)
+        visited.append(v.unique_id)
         for parent in v.parents:
             dfs(parent)
         ordered_list.append(v)
@@ -97,8 +97,16 @@ def backpropagate(variable: Variable, deriv: Any) -> None:
     """
     # TODO: Implement for Task 1.4.
     ordered_list = topological_sort(variable)
+    vd_dict = {variable.unique_id: deriv}
     for var in ordered_list:
-        var.accumulate_derivative(deriv)
+        d_out = vd_dict[var.unique_id]
+        if not var.is_leaf():
+            chain_results = var.chain_rule(d_out)
+            for v, d in chain_results:
+                vd_dict[v.unique_id] = vd_dict.get(v.unique_id, 0) + d
+        else:
+            var.accumulate_derivative(d_out)
+
     # raise NotImplementedError("Need to implement for Task 1.4")
 
 
