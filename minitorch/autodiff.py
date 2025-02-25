@@ -23,7 +23,15 @@ def central_difference(f: Any, *vals: Any, arg: int = 0, epsilon: float = 1e-6) 
         An approximation of $f'_i(x_0, \ldots, x_{n-1})$
     """
     # TODO: Implement for Task 1.1.
-    raise NotImplementedError("Need to implement for Task 1.1")
+    vals_plus = list(vals)
+    vals_minux = list(vals)
+
+    vals_plus[arg] += epsilon
+    vals_minux[arg] -= epsilon
+
+    derivative = (f(*vals_plus) - f(*vals_minux)) / (2 * epsilon)
+    return derivative
+    # raise NotImplementedError("Need to implement for Task 1.1")
 
 
 variable_count = 1
@@ -53,7 +61,7 @@ class Variable(Protocol):
 
 def topological_sort(variable: Variable) -> Iterable[Variable]:
     """
-    Computes the topological order of the computation graph.
+    Computes the topological order of the computation graph using DFS.
 
     Args:
         variable: The right-most variable
@@ -61,8 +69,19 @@ def topological_sort(variable: Variable) -> Iterable[Variable]:
     Returns:
         Non-constant Variables in topological order starting from the right.
     """
-    # TODO: Implement for Task 1.4.
-    raise NotImplementedError("Need to implement for Task 1.4")
+    visited = set()
+    ordered_list = []
+
+    def dfs(v: Variable):
+        if v in visited or v.is_constant():
+            return
+        visited.add(v)
+        for parent in v.parents:
+            dfs(parent)
+        ordered_list.append(v)
+
+    dfs(variable)
+    return reversed(ordered_list)
 
 
 def backpropagate(variable: Variable, deriv: Any) -> None:
@@ -77,7 +96,10 @@ def backpropagate(variable: Variable, deriv: Any) -> None:
     No return. Should write to its results to the derivative values of each leaf through `accumulate_derivative`.
     """
     # TODO: Implement for Task 1.4.
-    raise NotImplementedError("Need to implement for Task 1.4")
+    ordered_list = topological_sort(variable)
+    for var in ordered_list:
+        var.accumulate_derivative(deriv)
+    # raise NotImplementedError("Need to implement for Task 1.4")
 
 
 @dataclass
